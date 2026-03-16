@@ -4,41 +4,30 @@
 <meta charset="UTF-8">
 <title>Movie List</title>
 <style> 
-*{
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;}
+  box-sizing: border-box;margin:0;padding:0;}
 body{
-  font-family: Arial, sans-serif;
-  background-color: #f0f2f5;
-  display: flex;
-  justify-content: center;
-  padding-top: 30px;}
+  font-family: Arial, sans-serif;background-color: #f0f2f5;display: flex;
+  justify-content: center;padding-top: 30px;}
 .container{
-  background-color: #ffffff;
-  padding: 30px;
-  border-radius: 10px;
-  width: 500px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  background-color: #ffffff;padding: 30px;
+  border-radius: 10px;width: 500px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);}
+h2{ text-align: center; margin-bottom: 20px;
 }
-h2{
-  text-align: center;
-  margin-bottom: 20px;}
 label{
-  display: block;
-  font-weight: bold;
-  margin-bottom: 5px;}
-input, select{
+  display: block;font-weight: bold;margin-bottom: 5px;}
+input,select{
   width: 100%;
   padding: 8px;
   margin-bottom: 15px;
-  border: 1px solid #b7b2b2;
+  border: 1px solid #cccccc;
   border-radius: 5px;
-  font-size: 14px;}
-.stars span {
+  font-size: 14px;  
+}
+.stars span{
   font-size: 30px;
   cursor: pointer;
-  color: #b7b2b2;
+  color: #cccccc;
 }
 .stars span.on{
   color: #f5c518;
@@ -52,8 +41,7 @@ button{
   border-radius: 5px;
   font-size: 16px;
   cursor: pointer;
-  margin-top: 10px;
-}
+  margin-top: 10px;}
 button:hover{
   background-color: #145dbf;
 }
@@ -68,7 +56,17 @@ button:hover{
 }
 .movie-stars{
   color: #f5c518;
-  font-size: 20px;}
+}
+.delete-btn{
+  width: auto;
+  padding: 6px 12px;
+  background-color: #ada9a8;
+  font-size: 13px;
+  margin-top: 0;
+}
+.delete-btn:hover{
+  background-color: #ada9a8;
+} 
 </style>
 </head>
 <body>
@@ -85,6 +83,7 @@ button:hover{
     <option>Drama</option>
     <option>Horror</option>
     <option>Romance</option>
+    <option>Sci-Fi</option>
     <option>Thriller</option>
   </select>
   <label>Rating:</label>
@@ -99,58 +98,94 @@ button:hover{
   <h2 style="margin-top: 25px;">Movie List</h2>
   <div id="movieList"></div>
 </div>
+ 
 <script>
-let rating=0;
-const starSpans=document.querySelectorAll('#stars span');
-starSpans.forEach(function(star){
-  star.addEventListener('click', function(){
-    rating =this.getAttribute('data-val');
-    starSpans.forEach(function(s){
-      s.classList.remove('on');
-      if (s.getAttribute('data-val') <= rating){
-        s.classList.add('on'); }});
-    });
-});
-function addMovie(){ 
-  let title = document.getElementById('title').value;
-  let year = document.getElementById('year').value;
-  let genre = document.getElementById('genre').value;
-  if (!title || !year || rating == 0){
+let rating = 0;
+ 
+let starSpans = document.querySelectorAll("#stars span");
+ 
+for (let i = 0; i < starSpans.length; i++){
+  starSpans[i].addEventListener("click", function() {
+    rating = this.getAttribute("data-val");
+    for (let j = 0; j < starSpans.length; j++) {
+      starSpans[j].classList.remove("on");
+      if (starSpans[j].getAttribute("data-val") <= rating) {
+        starSpans[j].classList.add("on");
+      }
+    }
+  });}
+ 
+function addMovie(){
+  let title = document.getElementById("title").value;
+  let year = document.getElementById("year").value;
+  let genre = document.getElementById("genre").value;
+  if (title == ""||year==""||rating==0) {
     alert('Please fill all fields and select a rating.');
-    return; }
-  let movies = JSON.parse(localStorage.getItem('movies') || '[]');
-  let movie ={
-    title: title,
-    year: year,
-    genre: genre,
-    rating: String(rating) };
-  movies.push(movie);
+    return;}
+ 
+  let movies = JSON.parse(localStorage.getItem("movies") || "[]");
+  let found=false;
+  for (let i=0; i<movies.length;i++) {
+    if (movies[i].title==title){
+      let average=(Number(movies[i].rating)+Number(rating))/2;
+      movies[i].year =year;
+      movies[i].genre=genre;
+      movies[i].rating=String(average);
+      found = true;
+    }
+  }
+ 
+  if (found == false){
+    let movie = {title: title, year: year, genre: genre, rating: String(rating)};
+    movies.push(movie);
+  }
+ 
   localStorage.setItem('movies', JSON.stringify(movies));
-  document.getElementById('title').value = '';
-  document.getElementById('year').value = '';
-  document.getElementById('genre').value = 'Action';
+ 
+  document.getElementById('title').value = "";
+  document.getElementById('year').value = "";
   rating = 0;
-  starSpans.forEach(function(s){
-    s.classList.remove('on');});
-  displayMovies();}
-
-
-function displayMovies(){ //this part, i got help from ai as i did not understand it that much yet.
+  for (let i=0; i < starSpans.length; i++){
+    starSpans[i].classList.remove('on');
+  }
+ 
+  displayMovies();
+}
+ // i got help from ai here because i didnt know how to do the delete function, but i understand how it works now :D
+function deleteMovie(index) {
+  let confirmed = confirm('Are you sure you want to delete this movie?');
+ 
+  if (confirmed == true) {
+    let movies = JSON.parse(localStorage.getItem('movies') || '[]');
+    movies.splice(index, 1);
+    localStorage.setItem('movies', JSON.stringify(movies));
+    displayMovies();
+  }
+}
+ 
+function displayMovies() {
   let movies = JSON.parse(localStorage.getItem('movies') || '[]');
   let list = document.getElementById('movieList');
   list.innerHTML = '';
-  movies.forEach(function(m){
+ 
+  for (let i = 0; i < movies.length; i++) {
     let stars = '';
-    for (let i = 1; i <= 5; i++){
-      if (i <= m.rating){
-        stars += '&#9733;';
-      } else{
-        stars += '&#9734;';}}
+    for (let j = 1; j <= 5; j++) {
+      if (j <= movies[i].rating) {
+        stars = stars + '&#9733;';
+      } else {
+        stars = stars + '&#9734;';
+      }
+    }
+ 
     let div = document.createElement('div');
     div.className = 'movie-item';
-    div.innerHTML = '<span>' + m.title + ' (' + m.year + ') - ' + m.genre + ', Rating:</span><span class="movie-stars">' + stars + '</span>';
-    list.appendChild(div); //specifically this part. 
-  });}
+    div.innerHTML = '<span>' + movies[i].title + ' (' + movies[i].year + ') - ' + movies[i].genre + ', Rating: <span class="movie-stars">' + stars + '</span></span>' +
+      '<button class="delete-btn" onclick="deleteMovie(' + i + ')">Delete</button>';
+ 
+    list.appendChild(div);
+  }
+} // i also used sites like w3schools and khub to help me with the local storage and how to display the movies in the list and ofc the css tooo. 
 displayMovies();
 // note: i used online sources and templates for everything except the part i mentioned i got help from ai. 
 </script>
